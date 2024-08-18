@@ -1,3 +1,5 @@
+import tkinter as tk
+from tkinter import scrolledtext
 import spacy
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -5,7 +7,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 # Load SpaCy model
 nlp = spacy.load("en_core_web_sm")
 
-# Define a larger set of FAQs and their answers
+# Define a set of FAQs and their answers
 faq_data = {
     "What is your return policy?": "You can return any item within 30 days of purchase for a full refund.",
     "How can I track my order?": "You can track your order using the tracking number sent to your email.",
@@ -61,18 +63,44 @@ def get_faq_answer(user_input):
     best_faq = faqs[best_match_index]
     return faq_data[best_faq]
 
-# Chatbot loop
-def chatbot():
-    print("Hello! I'm here to answer your questions. Type 'exit' to end the chat.")
-    
-    while True:
-        user_input = input("You: ")
-        if user_input.lower() == 'exit':
-            print("Goodbye!")
-            break
+# GUI setup using Tkinter
+class FAQChatbotGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("FAQ Chatbot")
+        self.root.geometry("600x550")
         
-        answer = get_faq_answer(user_input)
-        print("Chatbot:", answer)
+        # Create widgets
+        self.title_label = tk.Label(root, text="FAQ Chatbot", font=("Helvetica", 16))
+        self.title_label.pack(pady=10)
+        
+        self.chat_area = scrolledtext.ScrolledText(root, wrap=tk.WORD, height=15, width=70, state='disabled')
+        self.chat_area.pack(pady=10)
+        
+        self.entry_label = tk.Label(root, text="Your Question:")
+        self.entry_label.pack(pady=5)
+        
+        self.user_input = tk.Entry(root, width=70)
+        self.user_input.pack(pady=5)
+        
+        self.send_button = tk.Button(root, text="Send", command=self.on_send)
+        self.send_button.pack(pady=10)
+        
+    def on_send(self):
+        user_text = self.user_input.get()
+        if user_text.strip():
+            self.chat_area.config(state='normal')
+            self.chat_area.insert(tk.END, "You: " + user_text + "\n")
+            
+            # Get answer from FAQ chatbot
+            answer = get_faq_answer(user_text)
+            
+            self.chat_area.insert(tk.END, "Chatbot: " + answer + "\n")
+            self.chat_area.config(state='disabled')
+            self.user_input.delete(0, tk.END)
+            self.chat_area.yview(tk.END)
 
 if __name__ == "__main__":
-    chatbot()
+    root = tk.Tk()
+    app = FAQChatbotGUI(root)
+    root.mainloop()
